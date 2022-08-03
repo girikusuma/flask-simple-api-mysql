@@ -90,9 +90,99 @@ def categories_detail(id):
             values =  (id,)
             cursor.execute(query, values)
             conn.commit()
-            
+
             data = [{
                 'message': 'Category deleted'
+            }]
+            return make_response(jsonify({'data': data}), 204)
+    except Exception as e:
+        return make_response(jsonify({'error': str(e)}), 400)
+
+@app.route('/products', methods=['GET', 'POST'])
+def product_list():
+    try:
+        if request.method == 'GET':
+            conn = connection()
+            cursor = conn.cursor()
+
+            query = "SELECT * FROM products;"
+            cursor.execute(query)
+            row = [x[0] for x in cursor.description]
+            result = cursor.fetchall()
+            
+            data = []
+            for item in result:
+                data.append(dict(zip(row, item)))
+            return make_response(jsonify({'data': data}), 200)
+        elif request.method == 'POST':
+            req = request.json
+            category_id = req['category_id']
+            code = req['code']
+            name = req['name']
+            description = req['description']
+
+            conn = connection()
+            cursor = conn.cursor()
+
+            query = "INSERT INTO products (category_id, code, name, description) VALUES (%s, %s, %s, %s);"
+            values =  (category_id, code, name, description)
+            cursor.execute(query, values)
+            conn.commit()
+
+            data = [{
+                'message': 'Product created'
+            }]
+            return make_response(jsonify({'data': data}), 201)
+    except Exception as e:
+        return make_response(jsonify({'error': str(e)}), 400)
+
+@app.route('/products/<id>', methods=['GET', 'PUT', 'DELETE'])
+def products_detail(id):
+    try:
+        if request.method == 'GET':
+            conn = connection()
+            cursor = conn.cursor()
+
+            query = "SELECT * FROM products WHERE id = %s;"
+            values = (id,)
+            cursor.execute(query, values)
+            row = [x[0] for x in cursor.description]
+            result = cursor.fetchall()
+            
+            data = []
+            for item in result:
+                data.append(dict(zip(row, item)))
+            return make_response(jsonify({'data': data}), 200)
+        elif request.method == 'PUT':
+            req = request.json
+            category_id = req['category_id']
+            code = req['code']
+            name = req['name']
+            description = req['description']
+
+            conn = connection()
+            cursor = conn.cursor()
+
+            query = "UPDATE categories SET category_id = %s, code = %s, name = %s, description = %s WHERE id = %s;"
+            values =  (category_id, code, name, description, id)
+            cursor.execute(query, values)
+            conn.commit()
+
+            data = [{
+                'message': 'Product updated'
+            }]
+            return make_response(jsonify({'data': data}), 200)
+        else:
+            conn = connection()
+            cursor = conn.cursor()
+
+            query = "DELETE FROM products WHERE id = %s;"
+            values =  (id,)
+            cursor.execute(query, values)
+            conn.commit()
+            
+            data = [{
+                'message': 'Product deleted'
             }]
             return make_response(jsonify({'data': data}), 204)
     except Exception as e:
